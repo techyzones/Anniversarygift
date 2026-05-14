@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX — Institutional Trading Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #0d1117;
+    --surface2: #131820;
+    --border: #1e2736;
+    --accent: #00d4ff;
+    --accent2: #ff4560;
+    --accent3: #00ff88;
+    --gold: #f5c842;
+    --text: #e2e8f0;
+    --muted: #4a5568;
+    --muted2: #718096;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* SCANLINE EFFECT */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 6px;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,212,255,0.5);
+  }
+
+  .logo span { color: var(--text); }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent3);
+    letter-spacing: 2px;
+  }
+
+  .pulse-dot {
+    width: 6px; height: 6px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 0 8px var(--accent3);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* HERO */
+  .hero {
+    padding: 60px 0 40px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    letter-spacing: 8px;
+    line-height: 0.95;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 .line1 { color: var(--text); }
+  .hero h1 .line2 {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(0,212,255,0.4);
+  }
+
+  .hero p {
+    color: var(--muted2);
+    font-size: 0.95rem;
+    max-width: 500px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    padding: 50px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,212,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.04);
+    box-shadow: 0 0 30px rgba(0,212,255,0.08), inset 0 0 30px rgba(0,212,255,0.03);
+  }
+
+  .upload-icon {
+    width: 52px; height: 52px;
+    margin: 0 auto 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .upload-zone:hover .upload-icon {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,212,255,0.2);
+  }
+
+  .upload-icon svg { width: 24px; height: 24px; stroke: var(--accent); }
+
+  .upload-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .upload-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  #fileInput { display: none; }
+
+  /* PREVIEW */
+  #previewWrap {
+    display: none;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #previewWrap img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    background: var(--surface);
+    display: block;
+  }
+
+  .preview-label {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(8,10,15,0.85);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--accent3);
+    padding: 4px 10px;
+  }
+
+  .remove-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(8,10,15,0.85);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--muted2);
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 4px 10px;
+    transition: all 0.2s;
+  }
+
+  .remove-btn:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  /* ANALYZE BUTTON */
+  .analyze-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 4px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .analyze-btn:hover:not(:disabled) {
+    background: #33ddff;
+    box-shadow: 0 0 40px rgba(0,212,255,0.4);
+    transform: translateY(-1px);
+  }
+
+  .analyze-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .analyze-btn.loading {
+    background: rgba(0,212,255,0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,212,255,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+
+  .analyze-btn.loading .spinner { display: block; }
+  .analyze-btn.loading .btn-text { opacity: 0.7; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* RESULTS */
+  #results {
+    display: none;
+    margin-top: 40px;
+    animation: fadeUp 0.5s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .results-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+    color: var(--text);
+  }
+
+  .timestamp {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-left: auto;
+  }
+
+  /* VERDICT CARD */
+  .verdict-card {
+    border-radius: 4px;
+    padding: 28px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verdict-card.bullish {
+    background: rgba(0,255,136,0.05);
+    border: 1px solid rgba(0,255,136,0.25);
+  }
+
+  .verdict-card.bearish {
+    background: rgba(255,69,96,0.05);
+    border: 1px solid rgba(255,69,96,0.25);
+  }
+
+  .verdict-card.neutral {
+    background: rgba(245,200,66,0.05);
+    border: 1px solid rgba(245,200,66,0.25);
+  }
+
+  .verdict-card.insufficient {
+    background: rgba(113,128,150,0.05);
+    border: 1px solid rgba(113,128,150,0.25);
+  }
+
+  .verdict-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .verdict-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 4px;
+  }
+
+  .bullish .verdict-badge { color: var(--accent3); text-shadow: 0 0 20px rgba(0,255,136,0.4); }
+  .bearish .verdict-badge { color: var(--accent2); text-shadow: 0 0 20px rgba(255,69,96,0.4); }
+  .neutral .verdict-badge { color: var(--gold); text-shadow: 0 0 20px rgba(245,200,66,0.4); }
+  .insufficient .verdict-badge { color: var(--muted2); }
+
+  .confidence-wrap {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .confidence-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .confidence-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--muted2);
+  }
+
+  .confidence-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .bullish .confidence-fill { background: var(--accent3); box-shadow: 0 0 10px rgba(0,255,136,0.5); }
+  .bearish .confidence-fill { background: var(--accent2); box-shadow: 0 0 10px rgba(255,69,96,0.5); }
+  .neutral .confidence-fill { background: var(--gold); }
+  .insufficient .confidence-fill { background: var(--muted); }
+
+  .verdict-summary {
+    color: var(--muted2);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* GRID CARDS */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 700px) {
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+  }
+
+  .info-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-card-label::before {
+    content: '';
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .info-card-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .tag-green { color: var(--accent3); }
+  .tag-red { color: var(--accent2); }
+  .tag-yellow { color: var(--gold); }
+  .tag-blue { color: var(--accent); }
+
+  /* ANALYSIS BLOCK */
+  .analysis-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 12px;
+  }
+
+  .block-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .block-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .analysis-text {
+    color: var(--muted2);
+    font-size: 0.88rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  .analysis-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* RISK BADGE */
+  .risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .risk-safe { background: rgba(0,255,136,0.1); color: var(--accent3); border: 1px solid rgba(0,255,136,0.2); }
+  .risk-medium { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.2); }
+  .risk-high { background: rgba(255,69,96,0.1); color: var(--accent2); border: 1px solid rgba(255,69,96,0.2); }
+
+  /* LEVELS TABLE */
+  .levels-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .levels-table tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .levels-table tr:last-child { border-bottom: none; }
+
+  .levels-table td {
+    padding: 10px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  .levels-table td:first-child { color: var(--muted2); width: 40%; }
+  .levels-table td:last-child { color: var(--text); text-align: right; }
+
+  /* MANIPULATION TAG */
+  .manip-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,69,96,0.08);
+    border: 1px solid rgba(255,69,96,0.2);
+    border-radius: 2px;
+    padding: 4px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--accent2);
+  }
+
+  .no-manip-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 2px;
+    padding: 4px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--accent3);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px;
+    text-align: center;
+    margin-top: 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  footer p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  footer p span { color: var(--accent); }
+
+  /* LOADING STATE */
+  .loading-overlay {
+    display: none;
+    text-align: center;
+    padding: 60px 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    margin-top: 24px;
+  }
+
+  .loading-overlay.active { display: block; }
+
+  .loading-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    height: 40px;
+    margin-bottom: 20px;
+  }
+
+  .loading-bars span {
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: bar 1s ease infinite;
+    opacity: 0.7;
+  }
+
+  .loading-bars span:nth-child(1) { animation-delay: 0s; height: 20px; }
+  .loading-bars span:nth-child(2) { animation-delay: 0.1s; height: 30px; }
+  .loading-bars span:nth-child(3) { animation-delay: 0.2s; height: 40px; }
+  .loading-bars span:nth-child(4) { animation-delay: 0.3s; height: 30px; }
+  .loading-bars span:nth-child(5) { animation-delay: 0.4s; height: 20px; }
+  .loading-bars span:nth-child(6) { animation-delay: 0.5s; height: 30px; }
+  .loading-bars span:nth-child(7) { animation-delay: 0.6s; height: 40px; }
+
+  @keyframes bar {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  .loading-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: var(--muted2);
+  }
+
+  .loading-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ERROR */
+  .error-box {
+    display: none;
+    background: rgba(255,69,96,0.05);
+    border: 1px solid rgba(255,69,96,0.2);
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent2);
+    letter-spacing: 1px;
+  }
+
+  .error-box.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">APEX<span> INTEL</span></div>
+    <div class="status-pill">
+      <div class="pulse-dot"></div>
+      SYSTEM ONLINE
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-badge">INSTITUTIONAL GRADE · AI-POWERED · SMC + ICT</div>
+    <h1>
+      <div class="line1">TRADING</div>
+      <div class="line2">INTELLIGENCE</div>
+    </h1>
+    <p>Upload any trading chart. Get institutional-level analysis powered by Smart Money Concepts, ICT methodology, and advanced price action theory.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept="image/*">
+    <div class="upload-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <polyline points="8 12 12 8 16 12"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+      </svg>
+    </div>
+    <div class="upload-title">DROP CHART HERE</div>
+    <div class="upload-sub">PNG · JPG · WEBP · Any timeframe</div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="previewWrap">
+    <img id="previewImg" src="" alt="Chart preview">
+    <div class="preview-label">● CHART LOADED</div>
+    <button class="remove-btn" id="removeBtn">✕ REMOVE</button>
+  </div>
+
+  <!-- ANALYZE BUTTON -->
+  <button class="analyze-btn" id="analyzeBtn" disabled>
+    <div class="spinner"></div>
+    <span class="btn-text">ANALYZE CHART</span>
+  </button>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-bars">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="loading-text">PROCESSING MARKET STRUCTURE</div>
+    <div class="loading-sub" id="loadingStep">Scanning price action...</div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- RESULTS -->
+  <div id="results"></div>
+</div>
+
+<footer>
+  <p>APEX INTEL — <span>INSTITUTIONAL TRADING INTELLIGENCE</span> — NOT FINANCIAL ADVICE</p>
+</footer>
+
+<script>
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  const previewWrap = document.getElementById('previewWrap');
+  const previewImg = document.getElementById('previewImg');
+  const removeBtn = document.getElementById('removeBtn');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const loadingStep = document.getElementById('loadingStep');
+  const errorBox = document.getElementById('errorBox');
+  const resultsDiv = document.getElementById('results');
+
+  let currentFile = null;
+  let currentBase64 = null;
+
+  // UPLOAD INTERACTIONS
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadFile(file);
+  });
+  fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) loadFile(e.target.files[0]);
+  });
+  removeBtn.addEventListener('click', resetUpload);
+
+  function loadFile(file) {
+    currentFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const result = e.target.result;
+      currentBase64 = result.split(',')[1];
+      previewImg.src = result;
+      uploadZone.style.display = 'none';
+      previewWrap.style.display = 'block';
+      analyzeBtn.disabled = false;
+      resultsDiv.style.display = 'none';
+      errorBox.classList.remove('active');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetUpload() {
+    currentFile = null;
+    currentBase64 = null;
+    uploadZone.style.display = 'block';
+    previewWrap.style.display = 'none';
+    analyzeBtn.disabled = true;
+    resultsDiv.style.display = 'none';
+    errorBox.classList.remove('active');
+    fileInput.value = '';
+  }
+
+  // ANALYZE
+  analyzeBtn.addEventListener('click', analyze);
+
+  const loadingSteps = [
+    'Detecting market structure...',
+    'Scanning order blocks & FVGs...',
+    'Identifying liquidity zones...',
+    'Analyzing price action...',
+    'Mapping SMC confluences...',
+    'Calculating momentum & RSI...',
+    'Processing institutional flow...',
+    'Compiling hedge fund report...'
+  ];
+
+  async function analyze() {
+    if (!currentBase64) return;
+
+    analyzeBtn.disabled = true;
+    analyzeBtn.classList.add('loading');
+    analyzeBtn.querySelector('.btn-text').textContent = 'ANALYZING...';
+    loadingOverlay.classList.add('active');
+    resultsDiv.style.display = 'none';
+    errorBox.classList.remove('active');
+
+    let stepIdx = 0;
+    const stepInterval = setInterval(() => {
+      loadingStep.textContent = loadingSteps[stepIdx % loadingSteps.length];
+      stepIdx++;
+    }, 1200);
+
+    const mediaType = currentFile.type || 'image/jpeg';
+
+    const prompt = `You are an elite institutional trading analyst at a top-tier hedge fund. Analyze this trading chart with extreme depth and precision using all of the following frameworks:
+
+- Price Action Analysis
+- Smart Money Concepts (SMC)
+- ICT (Inner Circle Trader) methodology
+- Support & Resistance levels
+- Supply & Demand zones
+- Liquidity zones (buy-side / sell-side)
+- Trend analysis & market structure (BOS, CHOCH)
+- RSI divergence / momentum
+- MACD signals
+- Volume analysis
+- Candlestick patterns
+- Breakout & fakeout detection
+- Fibonacci retracement levels
+- Order blocks (bullish/bearish)
+- Fair Value Gaps (FVG/imbalance)
+- Manipulation & liquidity grabs
+
+Respond ONLY with a valid JSON object (no markdown, no backticks, no extra text) with this exact structure:
+{
+  "direction": "BULLISH" | "BEARISH" | "NEUTRAL" | "INSUFFICIENT DATA",
+  "confidence": <integer 0-100>,
+  "signal": "BUY" | "SELL" | "WAIT",
+  "risk_level": "SAFE" | "MEDIUM RISK" | "HIGH RISK",
+  "summary": "<2-3 sentence executive summary of the market situation>",
+  "market_structure": "<detailed analysis of trend, BOS, CHOCH, HTF/LTF structure>",
+  "smc_ict": "<order blocks, FVGs, liquidity pools, inducement, displacement, POI>",
+  "indicators": "<RSI, MACD, volume, momentum observations from visible indicators if any>",
+  "manipulation": {
+    "detected": true | false,
+    "description": "<describe any stop hunts, liquidity grabs, fakeouts, or write 'None detected'>"
+  },
+  "entry_zone": "<specific price zone or description of where to enter>",
+  "stop_loss": "<specific stop loss zone or level>",
+  "take_profit": {
+    "tp1": "<first target>",
+    "tp2": "<second target>",
+    "tp3": "<third target or 'N/A'>"
+  },
+  "risk_reward": "<estimated R:R ratio>",
+  "key_levels": "<comma-separated list of critical price levels>",
+  "invalidation": "<what would invalidate this setup>",
+  "timeframe_note": "<detected or estimated timeframe and any MTF notes>"
+}`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: mediaType, data: currentBase64 }
+              },
+              { type: 'text', text: prompt }
+            ]
+          }]
+        })
+      });
+
+      clearInterval(stepInterval);
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const rawText = data.content.map(i => i.text || '').join('');
+      const clean = rawText.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      renderResults(parsed);
+
+    } catch (err) {
+      clearInterval(stepInterval);
+      errorBox.textContent = '⚠ ANALYSIS FAILED: ' + err.message;
+      errorBox.classList.add('active');
+    } finally {
+      analyzeBtn.disabled = false;
+      analyzeBtn.classList.remove('loading');
+      analyzeBtn.querySelector('.btn-text').textContent = 'ANALYZE CHART';
+      loadingOverlay.classList.remove('active');
+    }
+  }
+
+  function renderResults(d) {
+    const dirClass = {
+      'BULLISH': 'bullish',
+      'BEARISH': 'bearish',
+      'NEUTRAL': 'neutral',
+      'INSUFFICIENT DATA': 'insufficient'
+    }[d.direction] || 'neutral';
+
+    const signalColor = { 'BUY': 'tag-green', 'SELL': 'tag-red', 'WAIT': 'tag-yellow' }[d.signal] || 'tag-blue';
+    const riskClass = { 'SAFE': 'risk-safe', 'MEDIUM RISK': 'risk-medium', 'HIGH RISK': 'risk-high' }[d.risk_level] || 'risk-medium';
+    const conf = parseInt(d.confidence) || 0;
+
+    const now = new Date();
+    const ts = now.toUTCString().replace('GMT', 'UTC');
+
+    const manipHTML = d.manipulation?.detected
+      ? `<span class="manip-tag">⚡ MANIPULATION DETECTED</span><div style="margin-top:10px;" class="analysis-text">${d.manipulation.description}</div>`
+      : `<span class="no-manip-tag">✓ NO MANIPULATION DETECTED</span><div style="margin-top:10px;" class="analysis-text">${d.manipulation?.description || 'No liquidity grabs or stop hunts identified.'}</div>`;
+
+    resultsDiv.innerHTML = `
+      <div class="results-header">
+        <div class="results-title">ANALYSIS REPORT</div>
+        <div class="timestamp">${ts}</div>
+      </div>
+
+      <!-- VERDICT -->
+      <div class="verdict-card ${dirClass}">
+        <div class="verdict-top">
+          <div>
+            <div class="verdict-badge">${d.direction}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:2px;color:var(--muted2);margin-top:4px;">MARKET DIRECTION</div>
+          </div>
+          <div class="confidence-wrap">
+            <div class="confidence-num">${d.confidence}<span style="font-size:1.5rem;color:var(--muted2)">%</span></div>
+            <div class="confidence-label">CONFIDENCE</div>
+            <div class="confidence-bar"><div class="confidence-fill" id="confFill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="verdict-summary">${d.summary}</div>
+      </div>
+
+      <!-- TOP STATS -->
+      <div class="cards-grid">
+        <div class="info-card">
+          <div class="info-card-label">SIGNAL</div>
+          <div class="info-card-value ${signalColor}" style="font-size:1.4rem;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;">${d.signal}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">RISK LEVEL</div>
+          <div class="info-card-value"><span class="risk-badge ${riskClass}">${d.risk_level}</span></div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">RISK/REWARD</div>
+          <div class="info-card-value tag-blue" style="font-size:1.1rem;">${d.risk_reward}</div>
+        </div>
+      </div>
+
+      <!-- TRADE LEVELS -->
+      <div class="analysis-block">
+        <div class="block-title">TRADE LEVELS</div>
+        <table class="levels-table">
+          <tr><td>ENTRY ZONE</td><td class="tag-blue">${d.entry_zone}</td></tr>
+          <tr><td>STOP LOSS</td><td class="tag-red">${d.stop_loss}</td></tr>
+          <tr><td>TAKE PROFIT 1</td><td class="tag-green">${d.take_profit?.tp1 || 'N/A'}</td></tr>
+          <tr><td>TAKE PROFIT 2</td><td class="tag-green">${d.take_profit?.tp2 || 'N/A'}</td></tr>
+          <tr><td>TAKE PROFIT 3</td><td class="tag-green">${d.take_profit?.tp3 || 'N/A'}</td></tr>
+          <tr><td>KEY LEVELS</td><td style="color:var(--muted2);font-size:0.75rem;">${d.key_levels}</td></tr>
+          <tr><td>INVALIDATION</td><td style="color:var(--gold);font-size:0.75rem;">${d.invalidation}</td></tr>
+        </table>
+      </div>
+
+      <!-- MARKET STRUCTURE -->
+      <div class="analysis-block">
+        <div class="block-title">MARKET STRUCTURE</div>
+        <div class="analysis-text">${d.market_structure}</div>
+      </div>
+
+      <!-- SMC/ICT -->
+      <div class="analysis-block">
+        <div class="block-title">SMC · ICT · ORDER FLOW</div>
+        <div class="analysis-text">${d.smc_ict}</div>
+      </div>
+
+      <!-- INDICATORS -->
+      <div class="analysis-block">
+        <div class="block-title">INDICATORS & MOMENTUM</div>
+        <div class="analysis-text">${d.indicators}</div>
+        <div style="margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:1px;">TIMEFRAME: ${d.timeframe_note}</div>
+      </div>
+
+      <!-- MANIPULATION -->
+      <div class="analysis-block">
+        <div class="block-title">MANIPULATION DETECTION</div>
+        ${manipHTML}
+      </div>
+    `;
+
+    resultsDiv.style.display = 'block';
+
+    // Animate confidence bar
+    setTimeout(() => {
+      document.getElementById('confFill').style.width = conf + '%';
+    }, 100);
+
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+</body>
+</html>
